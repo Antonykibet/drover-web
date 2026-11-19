@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Drover Profit</title>
+<meta name="description" content="Project profitability for design studios — fee, hours and real cost on every phase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+
+<style>
+/* =====================================================================
+   DROVER DESIGN SYSTEM v2 — mass-market SaaS skin.
+
+   Direction: warm paper ground, one heavy geometric sans carrying the
+   whole page on weight alone, deep teal ink, a short plain-spoken
+   headline set very large and left. White utility nav above it. The
+   product still appears as dark plates quoted into the page.
+
+   Rule of the system, unchanged: no rule below contains a literal
+   colour, size, space, radius, border width or duration. Everything
+   resolves to a token.
+   ===================================================================== */
+
+:root {
+  /* ---- colour · brand -------------------------------------------- */
+  --c-brand:#0e3b46;
+  --c-brand-strong:#082a33;
+  --c-brand-ink:#ffffff;
+  --c-brand-weak:#dde9eb;
+
+  /* ---- colour · semantic ----------------------------------------- */
+  --c-warn:#a93c12;
+  --c-warn-weak:#f7e6dd;
+  --c-good:#1c7a52;
+  --c-good-ink:#ffffff;
+
+  /* ---- colour · neutral ------------------------------------------ */
+  --c-bg:#f1efec;
+  --c-surface:#ffffff;
+  --c-surface-sunk:#e7e4de;
+  --c-strip:#d9e7ea;
+  --c-line:#dbd7d0;
+  --c-line-strong:#c2bcb2;
+  --c-ink:#0e3b46;
+  --c-ink-2:#415a62;
+  --c-ink-3:#6e8188;
+  --c-focus:#0e3b46;
+
+  /* ---- colour · plate (the product, quoted — dark in both themes) - */
+  --c-plate:#0d0d0c;
+  --c-plate-ink:#f5f2ea;
+  --c-plate-ink-2:#bdb9ae;
+  --c-plate-ink-3:#8a867c;
+  --c-plate-line:rgba(255,255,255,0.10);
+  --c-plate-line-strong:rgba(255,255,255,0.18);
+  --c-plate-track:#3a3a37;
+  --c-plate-brand:#6ea8fe;
+  --c-plate-warn:#d95926;
+
+
+  /* ---- colour · data series (the product's own dataviz palette) --- */
+  --c-series-1:#3987e5;
+  --c-series-1-dim:#235f9f;
+  --c-series-2:#d95926;
+  --c-series-3:#199e70;
+
+  /* ---- type (one family, carried by weight) ----------------------- */
+  --f-text:'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-display:var(--f-text);
+
+  --t-label:0.8125rem;
+  --t-xs:0.8125rem;
+  --t-sm:0.9375rem;
+  --t-base:1.0625rem;
+  --t-lead:clamp(1.125rem, 1.7vw, 1.3125rem);
+  --t-fig:clamp(1.75rem, 3.3vw, 2.25rem);
+  --t-head:clamp(2rem, 4.2vw, 3rem);
+  --t-hero:clamp(2.75rem, 6.6vw, 4.75rem);
+
+  --lh-tight:1.0;
+  --lh-snug:1.1;
+  --lh-base:1.6;
+  --w-reg:400; --w-med:500; --w-semi:600; --w-bold:700; --w-black:800;
+  --track-label:0.07em;
+  --track-tight:-0.02em;
+
+  /* ---- space (4px base, nine steps, nothing between them) --------- */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px;
+  --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px;
+  --s-section:clamp(var(--s-7), 7vw, var(--s-9));
+  --measure:58ch;
+  --page:1180px;
+  --rail:168px;
+
+  /* ---- radius ----------------------------------------------------- */
+  --r-2xs:2px; --r-xs:3px; --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+
+  /* ---- border width ----------------------------------------------- */
+  --bw-hair:1px; --bw-thick:2px;
+
+  /* ---- elevation --------------------------------------------------- */
+  --e-1:0 1px 2px rgba(14,22,38,0.05);
+  --e-2:0 18px 44px rgba(10,22,28,0.18);
+
+  /* ---- motion ------------------------------------------------------ */
+  --dur-1:160ms; --dur-2:420ms; --dur-3:720ms;
+  --ease-out:cubic-bezier(.22,.7,.3,1);
+
+  color-scheme: light;
+}
+
+/* This page commits to one look. There is no dark palette: the tokens
+   above are the whole set, and `color-scheme: light` keeps native controls
+   and scrollbars with them whatever the viewer's system is set to. The
+   plates stay dark because the product itself is — they are a screenshot,
+   not a surface of this page. */
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing:border-box; }
+img { max-width:100%; }
+[hidden] { display:none !important; }
+
+body {
+  margin:0;
+  background:var(--c-bg);
+  color:var(--c-ink);
+  font-family:var(--f-text);
+  font-size:var(--t-base);
+  line-height:var(--lh-base);
+  -webkit-font-smoothing:antialiased;
+}
+
+h1, h2, h3 {
+  font-family:var(--f-display);
+  font-weight:var(--w-black);
+  letter-spacing:var(--track-tight);
+  margin:0;
+  color:var(--c-ink);
+}
+h1 { font-size:var(--t-hero); line-height:var(--lh-tight); }
+h2 { font-size:var(--t-head); line-height:var(--lh-snug); text-wrap:balance; }
+h3 { font-size:var(--t-lead); line-height:var(--lh-snug); font-weight:var(--w-bold); }
+p { margin:0; }
+
+a { color:var(--c-brand); text-underline-offset:3px; }
+
+:where(a, button, input, select, [tabindex]):focus-visible {
+  outline:var(--bw-thick) solid var(--c-focus);
+  outline-offset:var(--bw-thick);
+  border-radius:var(--r-xs);
+}
+
+/* =====================================================================
+   LAYOUT — band, wrap, section
+   ===================================================================== */
+
+.band { width:100%; }
+.band--surface { background:var(--c-surface); border-block:var(--bw-hair) solid var(--c-line); }
+.band--sunk { background:var(--c-surface-sunk); border-block:var(--bw-hair) solid var(--c-line); }
+
+.wrap {
+  max-width:var(--page);
+  margin-inline:auto;
+  padding-left:max(var(--s-4), env(safe-area-inset-left, 0px));
+  padding-right:max(var(--s-4), env(safe-area-inset-right, 0px));
+}
+
+.section { display:grid; gap:var(--s-5); padding-block:var(--s-section); }
+.section__head, .section__body, .section__extra { max-width:var(--measure); }
+.section__body { display:grid; gap:var(--s-4); }
+
+@media (min-width: 1000px) {
+  .section {
+    grid-template-columns:var(--rail) minmax(0, 1fr);
+    column-gap:var(--s-6);
+    row-gap:var(--s-5);
+  }
+  .section > * { grid-column:2; }
+  .section > .section__label { grid-column:1; grid-row:1; padding-top:0.5em; }
+  .section > .section__head { grid-row:1; }
+}
+
+/* =====================================================================
+   COMPONENT — figure
+   A plate plus its caption. Full width of its column.
+   ===================================================================== */
+.figure { max-width:none; }
+
+/* =====================================================================
+   COMPONENT — label
+   Uppercase eyebrow. Dark, not muted: it is read, not decoration.
+   ===================================================================== */
+.label {
+  font-size:var(--t-label);
+  font-weight:var(--w-bold);
+  letter-spacing:var(--track-label);
+  text-transform:uppercase;
+  color:var(--c-ink);
+  line-height:var(--lh-snug);
+}
+.label--muted { color:var(--c-ink-3); }
+.label--onplate { color:var(--c-plate-ink-3); font-weight:var(--w-semi); }
+
+/* =====================================================================
+   COMPONENT — text
+   ===================================================================== */
+.lead { font-size:var(--t-lead); line-height:1.5; color:var(--c-ink-2); }
+.body { font-size:var(--t-base); line-height:var(--lh-base); color:var(--c-ink-2); }
+.fine { font-size:var(--t-xs); line-height:var(--lh-base); color:var(--c-ink-3); }
+
+/* =====================================================================
+   COMPONENT — button
+   Variants: primary, quiet. Rounded rectangle, not a pill.
+   States: default, hover, active, disabled, focus-visible.
+   ===================================================================== */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  font:inherit; font-size:var(--t-sm); font-weight:var(--w-bold);
+  border-radius:var(--r-sm); border:var(--bw-hair) solid transparent;
+  padding:var(--s-3) var(--s-5);
+  cursor:pointer; text-decoration:none; white-space:nowrap;
+  transition:background var(--dur-1) var(--ease-out),
+             border-color var(--dur-1) var(--ease-out),
+             color var(--dur-1) var(--ease-out);
+}
+.btn--primary { background:var(--c-brand); color:var(--c-brand-ink); }
+.btn--primary:hover { background:var(--c-brand-strong); }
+.btn--primary:active { transform:translateY(1px); }
+.btn--quiet { background:transparent; color:var(--c-ink); border-color:var(--c-line-strong); }
+.btn--quiet:hover { border-color:var(--c-brand); }
+.btn[disabled] { opacity:0.55; cursor:not-allowed; }
+.btn[disabled]:hover { background:var(--c-brand); }
+.btn--lg { font-size:var(--t-base); padding:var(--s-4) var(--s-6); }
+
+/* =====================================================================
+   COMPONENT — chip
+   ===================================================================== */
+.chip {
+  display:inline-block;
+  font-size:var(--t-xs); font-weight:var(--w-bold);
+  letter-spacing:var(--track-label); text-transform:uppercase;
+  color:var(--c-brand); background:var(--c-brand-weak);
+  border-radius:var(--r-xs); padding:var(--s-1) var(--s-2);
+}
+
+/* =====================================================================
+   COMPONENT — topstrip + nav
+   A white utility bar over a tinted strip, as on a mass-market site.
+   The strip carries a real line, not decoration.
+   ===================================================================== */
+.topstrip { background:var(--c-strip); }
+.topstrip__in { display:flex; justify-content:center; padding-block:var(--s-2);
+  font-size:var(--t-xs); font-weight:var(--w-med); color:var(--c-ink); text-align:center; }
+
+.nav {
+  position:sticky; top:env(safe-area-inset-top, 0px); z-index:20;
+  background:var(--c-surface); border-bottom:var(--bw-hair) solid var(--c-line);
+}
+body::before {
+  content:""; position:fixed; inset:0 0 auto; z-index:21;
+  height:env(safe-area-inset-top, 0px); background:var(--c-surface);
+}
+.nav__in { display:flex; align-items:center; gap:var(--s-5);
+  padding-block:var(--s-3); }
+.nav__links { display:flex; align-items:center; gap:var(--s-5); margin-left:auto; }
+.nav__link { font-size:var(--t-sm); font-weight:var(--w-semi); color:var(--c-ink);
+  text-decoration:none; }
+.nav__link:hover { text-decoration:underline; }
+.wordmark { display:flex; align-items:center; gap:var(--s-2); }
+.wordmark__mark { width:var(--s-6); height:var(--s-6); border-radius:var(--r-pill);
+  background:var(--c-brand); color:var(--c-brand-ink);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:var(--w-black); font-size:var(--t-sm); }
+.wordmark__name { font-size:var(--t-lead); font-weight:var(--w-black);
+  letter-spacing:var(--track-tight); }
+
+@media (max-width: 860px) {
+  .nav__links .nav__link { display:none; }
+}
+
+/* =====================================================================
+   COMPONENT — hero
+   Copy left, product plate right. One column below 1000px.
+   ===================================================================== */
+.hero { display:grid; gap:var(--s-6); padding-block:var(--s-section); align-items:center; }
+.hero__copy { display:grid; gap:var(--s-5); }
+.hero__title { max-width:14ch; }
+.hero__lead { max-width:36ch; }
+.hero__actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-4); }
+
+@media (min-width: 1000px) {
+  .hero { grid-template-columns:minmax(0, 0.86fr) minmax(0, 1.14fr); column-gap:var(--s-6); }
+}
+
+/* =====================================================================
+   COMPONENT — showcase
+   The hero image: a portrait of someone who runs a studio, with the
+   product's own moments floating off its right edge. Photo and cards
+   share one grid row and overlap by two columns, so the row is as tall
+   as whichever is taller and nothing is positioned absolutely.
+   ===================================================================== */
+.showcase { display:grid; gap:var(--s-4); }
+.showcase__photo {
+  border-radius:var(--r-lg); overflow:hidden; aspect-ratio:4 / 5;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--c-brand) 22%, var(--c-surface)),
+      color-mix(in srgb, var(--c-brand) 46%, var(--c-surface)));
+  display:grid; place-items:center; padding:var(--s-5);
+}
+.showcase__photo img { width:100%; height:100%; object-fit:cover; border-radius:var(--r-lg); }
+/* a slot holding a real photograph has no mat: the picture is the panel */
+.showcase__photo--filled { padding:0; background:var(--c-plate); place-items:stretch; }
+
+/* the stand-in, until a real photograph is dropped in */
+.photoslot { display:grid; gap:var(--s-2); justify-items:center; text-align:center; max-width:28ch; }
+.photoslot__icon { width:var(--s-8); height:var(--s-8); color:var(--c-brand); opacity:0.55; }
+.photoslot__t { font-size:var(--t-sm); font-weight:var(--w-bold); color:var(--c-brand); }
+.photoslot__s { font-size:var(--t-xs); line-height:1.5; color:var(--c-ink-2); }
+
+.showcase__cards { display:grid; gap:var(--s-4); align-content:center; }
+
+/* =====================================================================
+   COMPONENT — shot
+   A photograph with one product card floating off its corner — the hero's
+   composition, repeated down the page. `--right` flips which side the
+   photograph sits on, so the eye alternates as you scroll.
+
+   Each shot ships with a brief in place of the image. Dropping a real one
+   in means replacing the contents of .shot__photo with an <img>; nothing
+   else in the layout moves.
+   ===================================================================== */
+.shot { display:grid; gap:var(--s-4); margin-top:var(--s-5); }
+.shot__photo {
+  border-radius:var(--r-lg); overflow:hidden; aspect-ratio:3 / 2;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--c-brand) 20%, var(--c-surface)),
+      color-mix(in srgb, var(--c-brand) 44%, var(--c-surface)));
+  display:grid; place-items:center; padding:var(--s-5);
+}
+.shot__photo img { width:100%; height:100%; object-fit:cover; display:block; }
+/* a slot holding a real image has no mat: the picture is the panel */
+.shot__photo--filled { padding:0; background:var(--c-plate); place-items:stretch; }
+.shot__card { align-self:center; }
+
+@media (min-width: 1000px) {
+  .shot { grid-template-columns:repeat(12, minmax(0, 1fr)); align-items:center; gap:0; }
+  .shot__photo { grid-column:1 / 10; grid-row:1; }
+  .shot__card { grid-column:8 / -1; grid-row:1; }
+  .shot--right .shot__photo { grid-column:4 / -1; }
+  .shot--right .shot__card { grid-column:1 / 6; }
+  .shot__photo { justify-items:start; align-items:end; padding:var(--s-5); }
+  .shot--right .shot__photo { justify-items:end; }
+  .shot--right .photoslot { text-align:right; justify-items:end; }
+  /* a filled slot ignores the mat: the photograph is the panel */
+  .shot__photo--filled { padding:0; justify-items:stretch; align-items:stretch; }
+}
+
+/* =====================================================================
+   COMPONENT — pcard
+   One moment from the product, lifted onto the page. Small enough to
+   read at a glance, and every figure in it is a real one.
+   ===================================================================== */
+.pcard {
+  background:var(--c-surface); border:var(--bw-hair) solid var(--c-line);
+  border-radius:var(--r-md); box-shadow:var(--e-2);
+  padding:var(--s-4) var(--s-5); display:grid; gap:var(--s-3);
+}
+.pcard__top { display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-4); }
+.pcard__label { font-size:var(--t-xs); font-weight:var(--w-semi); color:var(--c-ink-2); }
+.pcard__sub { font-size:var(--t-xs); color:var(--c-ink-3); }
+.pcard__value { font-size:var(--t-fig); font-weight:var(--w-black);
+  letter-spacing:var(--track-tight); line-height:1; font-variant-numeric:tabular-nums; }
+.pcard__mark { display:flex; align-items:center; gap:var(--s-2);
+  font-size:var(--t-sm); font-weight:var(--w-bold); }
+.pcard__mark svg { width:var(--s-4); height:var(--s-4); flex:0 0 auto; }
+.pcard__ok { display:flex; align-items:center; gap:var(--s-3);
+  font-size:var(--t-xs); color:var(--c-ink-2); }
+.pcard__ok svg { width:var(--s-5); height:var(--s-5); flex:0 0 auto; }
+.pcard__flag { color:var(--c-warn); font-weight:var(--w-semi); }
+
+.pcard-meter { display:grid; gap:var(--s-2); }
+.pcard-meter__track { display:flex; gap:var(--bw-thick); height:var(--s-2);
+  border-radius:var(--r-xs); overflow:hidden; background:var(--c-surface-sunk); }
+.pcard-meter__seg { height:100%; display:block; }
+.pcard-meter__keys { display:flex; flex-wrap:wrap; gap:var(--s-1) var(--s-3);
+  font-size:var(--t-xs); color:var(--c-ink-3); }
+
+@media (min-width: 1000px) {
+  .showcase { grid-template-columns:repeat(12, minmax(0, 1fr)); align-items:center; gap:0; }
+  .showcase__photo {
+    grid-column:1 / 9; grid-row:1;
+    justify-items:start; align-items:end;
+    padding:var(--s-5) 42% var(--s-5) var(--s-5);
+  }
+  .photoslot { text-align:left; justify-items:start; max-width:20ch; }
+  .showcase__photo--filled { padding:0; justify-items:stretch; align-items:stretch; }
+  .showcase__cards { grid-column:7 / -1; grid-row:1; }
+  .pcard--b { margin-left:var(--s-7); }
+  .pcard--c { margin-left:var(--s-5); margin-right:var(--s-6); }
+}
+
+/* =====================================================================
+   COMPONENT — plate
+   ===================================================================== */
+.plate {
+  background:var(--c-plate); color:var(--c-plate-ink);
+  border:var(--bw-hair) solid var(--c-plate-line-strong);
+  border-radius:var(--r-lg);
+  padding:clamp(var(--s-5), 3.2vw, var(--s-6));
+  box-shadow:var(--e-2);
+  display:grid; gap:var(--s-5);
+}
+.plate--shot { padding:0; overflow:hidden; }
+.plate--shot img { display:block; width:100%; height:auto; }
+.plate__head {
+  display:flex; flex-wrap:wrap; align-items:baseline;
+  justify-content:space-between; gap:var(--s-2);
+  padding-bottom:var(--s-3); border-bottom:var(--bw-hair) solid var(--c-plate-line);
+}
+.plate__title { font-size:var(--t-sm); font-weight:var(--w-bold); }
+.plate__title span { color:var(--c-plate-ink-3); font-weight:var(--w-reg); }
+.plate__flag { font-size:var(--t-xs); font-weight:var(--w-bold); color:var(--c-plate-warn); }
+.plate__note { font-size:var(--t-xs); line-height:var(--lh-base); color:var(--c-ink-3);
+  max-width:var(--measure); margin-top:var(--s-3); }
+
+/* =====================================================================
+   COMPONENT — metrics
+   ===================================================================== */
+.metrics { display:grid; gap:var(--bw-hair); background:var(--c-plate-line);
+  border-radius:var(--r-sm); overflow:hidden;
+  grid-template-columns:repeat(var(--cols, 3), minmax(0, 1fr)); }
+.metric { background:var(--c-plate); padding:var(--s-4); display:grid; gap:var(--s-2); }
+.metric__key { font-size:var(--t-xs); font-weight:var(--w-semi);
+  letter-spacing:var(--track-label); text-transform:uppercase; color:var(--c-plate-ink-3); }
+.metric__value { font-size:var(--t-fig); font-weight:var(--w-black);
+  letter-spacing:var(--track-tight); line-height:1.05; font-variant-numeric:tabular-nums; }
+.metric__value--warn { color:var(--c-plate-warn); }
+.metric__note { font-size:var(--t-xs); line-height:1.45; color:var(--c-plate-ink-2); }
+
+/* =====================================================================
+   COMPONENT — meter
+   ===================================================================== */
+.meter { display:grid; gap:var(--s-3); }
+.meter__track { display:flex; gap:var(--bw-thick); height:var(--s-2);
+  border-radius:var(--r-xs); overflow:hidden; background:var(--c-plate-track); }
+.meter__seg { height:100%; display:block; transform-origin:left center; }
+.meter__keys { display:flex; flex-wrap:wrap; gap:var(--s-2) var(--s-4);
+  font-size:var(--t-xs); color:var(--c-plate-ink-2); }
+.meter__key { display:inline-flex; align-items:center; gap:var(--s-2); }
+.meter__key b { font-weight:var(--w-bold); color:var(--c-plate-ink); }
+.swatch { width:var(--s-2); height:var(--s-2); border-radius:var(--r-2xs); flex:0 0 auto; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .meter__seg { animation:meter-grow var(--dur-3) var(--ease-out) both; }
+  .meter__seg:nth-child(2) { animation-delay:90ms; }
+  .meter__seg:nth-child(3) { animation-delay:170ms; }
+  @keyframes meter-grow { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+}
+
+/* =====================================================================
+   COMPONENT — ledger
+   ===================================================================== */
+.ledger { display:grid; }
+.ledger__row {
+  display:grid; grid-template-columns:minmax(0,1fr) 2.2fr auto;
+  gap:var(--s-3); align-items:center;
+  padding-block:var(--s-2); border-bottom:var(--bw-hair) solid var(--c-plate-line);
+  font-size:var(--t-xs);
+}
+.ledger__row:last-child { border-bottom:none; }
+.ledger__track { height:var(--s-2); border-radius:var(--r-2xs);
+  background:var(--c-plate-track); overflow:hidden; }
+.ledger__fill { display:block; height:100%; background:var(--c-series-2); transform-origin:left; }
+.ledger__val { font-variant-numeric:tabular-nums; color:var(--c-plate-ink); font-weight:var(--w-bold); }
+
+/* =====================================================================
+   COMPONENT — pips
+   ===================================================================== */
+.pips { display:flex; flex-wrap:wrap; gap:var(--s-1); }
+.pip {
+  position:relative; width:var(--s-7); height:var(--s-6);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:var(--r-sm); font-size:var(--t-xs); font-weight:var(--w-bold);
+  color:var(--c-plate-ink); background:var(--c-series-1-dim);
+}
+.pip--mid { background:var(--c-series-1); }
+.pip--over { background:var(--c-plate-warn); }
+.pip--over::after {
+  content:""; position:absolute; top:calc(var(--s-1) * -0.75); right:calc(var(--s-1) * -0.75);
+  width:var(--s-2); height:var(--s-2); border-radius:var(--r-pill);
+  background:var(--c-plate-ink); border:var(--bw-thick) solid var(--c-plate);
+}
+
+/* =====================================================================
+   COMPONENT — defs
+   ===================================================================== */
+.defs { display:grid; gap:var(--bw-hair); background:var(--c-line);
+  border:var(--bw-hair) solid var(--c-line); border-radius:var(--r-md); overflow:hidden; }
+.defs__row { background:var(--c-surface); padding:var(--s-4) var(--s-5);
+  display:grid; grid-template-columns:7rem minmax(0,1fr); gap:var(--s-4); align-items:start; }
+.defs__term { font-size:var(--t-xs); font-weight:var(--w-black);
+  letter-spacing:var(--track-label); text-transform:uppercase; color:var(--c-ink); }
+.defs__desc { margin:0; font-size:var(--t-sm); line-height:var(--lh-base); color:var(--c-ink-2); }
+
+/* =====================================================================
+   COMPONENT — callout
+   ===================================================================== */
+.callout {
+  font-size:var(--t-lead); font-weight:var(--w-bold); line-height:1.35;
+  letter-spacing:var(--track-tight); color:var(--c-ink);
+  max-width:34ch; margin:0;
+  padding-left:var(--s-5); border-left:var(--bw-thick) solid var(--c-brand);
+}
+
+/* =====================================================================
+   COMPONENT — field
+   ===================================================================== */
+.form { display:grid; gap:var(--s-4); max-width:30rem; }
+.field { display:grid; gap:var(--s-2); }
+.field__label {
+  font-size:var(--t-xs); font-weight:var(--w-bold); letter-spacing:var(--track-label);
+  text-transform:uppercase; color:var(--c-ink-3);
+}
+.field__control {
+  width:100%; font:inherit; font-size:var(--t-sm); color:var(--c-ink);
+  background:var(--c-surface); border:var(--bw-hair) solid var(--c-line-strong);
+  border-radius:var(--r-sm); padding:var(--s-3);
+  transition:border-color var(--dur-1) var(--ease-out);
+}
+.field__control:hover { border-color:var(--c-ink-3); }
+.field__control::placeholder { color:var(--c-ink-3); }
+.field__control[aria-invalid="true"] { border-color:var(--c-warn); }
+.field__pair { display:grid; grid-template-columns:1fr 1fr; gap:var(--s-4); }
+.form__msg { font-size:var(--t-xs); line-height:var(--lh-base); color:var(--c-ink-3); min-height:1px; }
+.form__msg--bad { color:var(--c-warn); }
+
+.receipt {
+  border:var(--bw-hair) solid var(--c-brand); background:var(--c-brand-weak);
+  border-radius:var(--r-md); padding:var(--s-5); max-width:30rem;
+  display:grid; gap:var(--s-2);
+}
+
+/* =====================================================================
+   COMPONENT — colophon
+   ===================================================================== */
+.colophon { padding-block:var(--s-6); border-top:var(--bw-hair) solid var(--c-line); }
+.colophon__in { display:flex; flex-wrap:wrap; gap:var(--s-3) var(--s-6);
+  justify-content:space-between; align-items:center; }
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 720px) {
+  .metrics { grid-template-columns:1fr; }
+  .defs__row { grid-template-columns:1fr; gap:var(--s-1); }
+  .ledger__row { grid-template-columns:minmax(0,1fr) auto; }
+  .ledger__track { display:none; }
+  .field__pair { grid-template-columns:1fr; }
+}
+</style>
+
+
+</head>
+<body>
+
+<div class="band topstrip">
+  <div class="wrap topstrip__in">
+    Profit edition — for studios that already bill somewhere else.
+  </div>
+</div>
+
+<header class="band nav">
+  <div class="wrap nav__in">
+    <div class="wordmark">
+      <span class="wordmark__mark">D</span>
+      <span class="wordmark__name">Drover</span>
+      <span class="chip">Profit</span>
+    </div>
+    <nav class="nav__links" aria-label="Primary">
+      <a class="nav__link" href="#numbers">What you see</a>
+      <a class="nav__link" href="#mechanism">How it works</a>
+      <a class="nav__link" href="#editions">Editions</a>
+      <a class="btn btn--primary" href="#waitlist">Join the waitlist</a>
+    </nav>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap hero">
+    <div class="hero__copy">
+      <p class="label">Project profitability for design studios</p>
+      <h1 class="hero__title">Know which phases made money and which ate the fee</h1>
+      <p class="lead hero__lead">
+        Track the fee, the hours and the real cost on every phase you run.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary btn--lg" href="#waitlist">Join the waitlist</a>
+        <span class="fine">A few studios at a time, each set up by hand.</span>
+      </div>
+    </div>
+
+    <div class="showcase">
+      <div class="showcase__photo showcase__photo--filled">
+        <img src="shots/principal.jpg" alt="A studio principal in his own office, looking away from the camera." width="1000" height="1250">
+      </div>
+
+      <div class="showcase__cards">
+        <div class="pcard pcard--a">
+          <p class="pcard__label">Profit on finished work</p>
+          <p class="pcard__value">$32,141</p>
+          <p class="pcard__sub">40% of $79,400 in fees, across six phases</p>
+          <p class="pcard__ok"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="var(--c-good)"/><path d="M5.8 10.4 L8.7 13.2 L14.2 7.3" fill="none" stroke="var(--c-good-ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Nobody filled in a timesheet.</span></p>
+        </div>
+
+        <div class="pcard pcard--b">
+          <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Utilization</span></p>
+          <div class="pcard__top">
+            <p class="pcard__label">Where this week went</p>
+            <p class="pcard__sub">177.5h logged</p>
+          </div>
+          <div class="pcard-meter">
+            <div class="pcard-meter__track" role="img"
+                 aria-label="64 percent on planned work, 16 percent unpriced coordination, 20 percent overhead">
+              <span class="pcard-meter__seg" style="width:64%; background:var(--c-brand);"></span>
+              <span class="pcard-meter__seg" style="width:16%; background:var(--c-warn);"></span>
+              <span class="pcard-meter__seg" style="width:20%; background:var(--c-line-strong);"></span>
+            </div>
+            <div class="pcard-meter__keys">
+              <span><b>64%</b> somebody is paying</span>
+              <span><b>16%</b> unpriced</span>
+              <span><b>20%</b> overhead</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard pcard--c">
+          <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Profit</span></p>
+          <p class="pcard__sub">Cedar Ridge concept
+            <span class="pcard__flag">lost $510</span> — 157 hours against a $4,200 fee</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section class="band band--surface" id="numbers">
+  <div class="wrap section">
+    <p class="label label--muted section__label">What you see</p>
+    <div class="section__head">
+      <h2>Three numbers that never meet</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        The fee is in the contract. The hours are in a spreadsheet somebody
+        chases on Friday. What the work cost to deliver is nowhere at all, so
+        the one subtraction that matters never gets made.
+      </p>
+      <p class="body">
+        Drover puts all three on one row, for every phase, while you can still
+        do something about it.
+      </p>
+    </div>
+    <div class="section__extra">
+      <dl class="defs">
+        <div class="defs__row">
+          <dt class="defs__term">Fee</dt>
+          <dd class="defs__desc">What the client agreed for this phase. Taken off the contract once, never retyped.</dd>
+        </div>
+        <div class="defs__row">
+          <dt class="defs__term">Cost</dt>
+          <dd class="defs__desc">What the people on it cost the firm an hour, times the hours the clock recorded. Not a charge-out rate and no client ever sees it. You never type it either — it follows whoever holds the task, so moving work to someone senior recosts the phase by itself.</dd>
+        </div>
+        <div class="defs__row">
+          <dt class="defs__term">Profit</dt>
+          <dd class="defs__desc">The fee less the cost, once the phase is finished. The number that usually exists nowhere, and the reason for the product.</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+
+<section class="band">
+  <div class="wrap section">
+    <p class="label label--muted section__label">What you find first</p>
+    <div class="section__head">
+      <h2>The same studio, from 65% to minus 12%</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        Every phase here was sold by the same people, to the same standard,
+        in the same year. One kept 65 cents of every dollar. One handed back
+        twelve. Nobody in the studio could have told you which was which.
+      </p>
+      <p class="body">
+        That spread is not a failure of effort. It is what happens when a
+        fixed fee meets a job nobody measured — and it is the first thing
+        the product shows you.
+      </p>
+    </div>
+
+
+    <div class="shot">
+      <div class="shot__photo shot__photo--filled">
+        <img src="shots/plan-chest.jpg" alt="Two designers going through a drawing set together at a studio desk." width="1500" height="1000" loading="lazy">
+      </div>
+      <div class="pcard shot__card">
+        <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Profit</span></p>
+        <p class="pcard__label">Halcyon House · Detail drawing</p>
+        <p class="pcard__value">62%</p>
+        <p class="pcard__sub">$7,701 kept of a $12,400 fee, over 127 hours</p>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="plate">
+        <div class="plate__head">
+          <p class="plate__title">Finished phases <span>· margin on the fee</span></p>
+          <p class="label label--onplate">Six phases</p>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <p class="metric__key">Best</p>
+            <p class="metric__value">65%</p>
+            <p class="metric__note">Brookline, initial direction</p>
+          </div>
+          <div class="metric">
+            <p class="metric__key">Worst</p>
+            <p class="metric__value metric__value--warn">&minus;12%</p>
+            <p class="metric__note">157 hours against a $4,200 fee</p>
+          </div>
+          <div class="metric">
+            <p class="metric__key">Across the book</p>
+            <p class="metric__value">40%</p>
+            <p class="metric__note">$32,141 kept of $79,400 in fees</p>
+          </div>
+        </div>
+        <div class="ledger">
+          <div class="ledger__row">
+            <span>Brookline Show Unit <span style="color:var(--c-plate-ink-3);">· Initial direction</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:100%; background:var(--c-plate-brand);"></span></span>
+            <span class="ledger__val">65%</span>
+          </div>
+          <div class="ledger__row">
+            <span>Halcyon House <span style="color:var(--c-plate-ink-3);">· Detail drawing</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:95%; background:var(--c-plate-brand);"></span></span>
+            <span class="ledger__val">62%</span>
+          </div>
+          <div class="ledger__row">
+            <span>Brookline Show Unit <span style="color:var(--c-plate-ink-3);">· Detail drawing</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:89%; background:var(--c-plate-brand);"></span></span>
+            <span class="ledger__val">58%</span>
+          </div>
+          <div class="ledger__row">
+            <span>Redfern Penthouse <span style="color:var(--c-plate-ink-3);">· Concept</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:48%; background:var(--c-plate-brand);"></span></span>
+            <span class="ledger__val">31%</span>
+          </div>
+          <div class="ledger__row">
+            <span>Marlow Hotel Lobby <span style="color:var(--c-plate-ink-3);">· Initial direction</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:12%; background:var(--c-plate-brand);"></span></span>
+            <span class="ledger__val">8%</span>
+          </div>
+          <div class="ledger__row">
+            <span>Cedar Ridge Clubhouse <span style="color:var(--c-plate-ink-3);">· Concept</span></span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:18%; background:var(--c-plate-warn);"></span></span>
+            <span class="ledger__val" style="color:var(--c-plate-warn);">&minus;12%</span>
+          </div>
+        </div>
+      </div>
+      <p class="plate__note">
+        Fee minus what the hours cost, phase by phase. No estimate of
+        completeness, no allocation anyone can argue with.
+      </p>
+    </div>
+
+    <blockquote class="section__extra callout">
+      The studio did not lose money on that phase by accident. It lost it
+      the moment somebody decided who would do the work.
+    </blockquote>
+  </div>
+</section>
+
+<section class="band band--sunk" id="mechanism">
+  <div class="wrap section">
+    <p class="label label--muted section__label">How it works</p>
+    <div class="section__head">
+      <h2>No timesheets. Not one.</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        Hours come from a task's own status changes — the gap between going
+        In&nbsp;progress and leaving again, clipped to working hours. Nobody
+        rounds up on a Friday. Nobody rebuilds a fortnight from memory.
+      </p>
+      <p class="body">
+        Which bucket an hour lands in is derived too, from what the task is
+        attached to. Nobody picks it from a dropdown, so nobody can talk the
+        number up in a review.
+      </p>
+    </div>
+
+
+    <div class="shot shot--right">
+      <div class="shot__photo shot__photo--filled">
+        <img src="shots/drawing.jpg" alt="A designer at a screen with a furniture model open, hands on the keyboard." width="1500" height="1000" loading="lazy">
+      </div>
+      <div class="pcard shot__card">
+        <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Team Schedule</span></p>
+        <p class="pcard__label">MER-402 · RFI 41</p>
+        <p class="pcard__sub">In progress 09:40, external review 12:40.
+          <strong>3h recorded</strong>, and nobody typed a number.</p>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="plate plate--shot">
+        <img src="shots/team-schedule.png" width="1964" height="1212"
+             alt="The Team Schedule board. Every task carries its project and phase, the bucket it falls in, who holds it, hours logged against estimate, its window, and a state control reading Done, External review, In progress or Blocked.">
+      </div>
+      <p class="plate__note">
+        The STATE column at the end of every row is the timesheet. Moving a
+        task into In&nbsp;progress starts the clock and moving it out stops it,
+        which is where <em>3h of 3h</em> on the RFI came from. The BUCKET
+        column beside it is derived the same way — nobody chose it.
+      </p>
+    </div>
+  </section>
+
+<section class="band">
+  <div class="wrap section">
+    <p class="label label--muted section__label">The quiet number</p>
+    <div class="section__head">
+      <h2>Put a figure on the work you gave away</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        Every studio absorbs work. The reselection after the client saw it in
+        the room, the delivery nobody scheduled into a fee, the supplier chased
+        for the third time. None of it is worth the argument on its own, which
+        is exactly why it never gets counted.
+      </p>
+    </div>
+
+
+    <div class="shot">
+      <div class="shot__photo shot__photo--filled">
+        <img src="shots/samples.jpg" alt="Four designers leaning over drawings and samples at a studio table." width="1500" height="1000" loading="lazy">
+      </div>
+      <div class="pcard shot__card">
+        <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Team Schedule</span></p>
+        <p class="pcard__label">MER-390 · Reselect the dining pendants</p>
+        <p class="pcard__sub">Original discontinued. <strong>5.5 hours</strong>
+          on the clock, and no work item behind any of them.</p>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="plate">
+        <div class="plate__head">
+          <p class="plate__title">Hours nobody is paying for <span>· week of 14 September</span></p>
+          <p class="label label--onplate">16% of everything logged</p>
+        </div>
+        <div class="metrics" style="--cols:2;">
+          <div class="metric">
+            <p class="metric__key">Worked, no fee behind it</p>
+            <p class="metric__value metric__value--warn">29h</p>
+            <p class="metric__note">In a single week, across four kinds of work</p>
+          </div>
+          <div class="metric">
+            <p class="metric__key">What those hours cost</p>
+            <p class="metric__value metric__value--warn">$638</p>
+            <p class="metric__note">At what the people doing them cost the firm</p>
+          </div>
+        </div>
+        <div class="ledger">
+          <div class="ledger__row">
+            <span>Reselection</span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:100%;"></span></span>
+            <span class="ledger__val">$264</span>
+          </div>
+          <div class="ledger__row">
+            <span>Delivery &amp; install scheduling</span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:92%;"></span></span>
+            <span class="ledger__val">$242</span>
+          </div>
+          <div class="ledger__row">
+            <span>Supplier follow-up</span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:29%;"></span></span>
+            <span class="ledger__val">$77</span>
+          </div>
+          <div class="ledger__row">
+            <span>Supplier enquiry / sample request</span>
+            <span class="ledger__track"><span class="ledger__fill" style="width:21%;"></span></span>
+            <span class="ledger__val">$55</span>
+          </div>
+        </div>
+      </div>
+      <p class="plate__note">
+        Nobody logged any of this as free. It is free because no work item
+        covers it, which is also why nobody has ever added it up before.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="band band--surface">
+  <div class="wrap section">
+    <p class="label label--muted section__label">For whoever runs the week</p>
+    <div class="section__head">
+      <h2>Run the week from the same records</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        A principal wants to know whether the job made money. Whoever runs the
+        studio wants to know who is drowning and what is stuck with a client.
+        Both come out of the same records, so there is no second system to
+        keep and no week where the two disagree.
+      </p>
+      <p class="body">
+        You can see who is carrying the week and who has room, without asking
+        anyone — the estimate on every task was set when the phase was planned
+        and has been spreading across their calendar since.
+      </p>
+    </div>
+
+
+    <div class="shot shot--right">
+      <div class="shot__photo shot__photo--filled">
+        <img src="shots/week-board.jpg" alt="A principal and a designer going through the week's work at a desk." width="1500" height="1000" loading="lazy">
+      </div>
+      <div class="pcard shot__card">
+        <p class="pcard__mark"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none"><g stroke="var(--c-brand)" stroke-width="2.4" stroke-linecap="round"><path d="M8 2 V14"/><path d="M2.8 5 L13.2 11"/><path d="M13.2 5 L2.8 11"/></g></svg><span>Utilization</span></p>
+        <p class="pcard__label">Busiest this week</p>
+        <p class="pcard__value">78%</p>
+        <p class="pcard__sub">Marissa, on four jobs. Four people have nothing booked.</p>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="plate">
+        <div class="plate__head">
+          <p class="plate__title">The team this week</p>
+          <p class="label label--onplate">18 people · busiest at 78%</p>
+        </div>
+        <div class="pips" role="img" aria-label="Eighteen people ordered by how booked their week is; the busiest is at 78 per cent and four have nothing booked">
+          <span class="pip pip--mid" title="Marissa — 78% booked">MN</span>
+          <span class="pip pip--mid" title="Avery — 55% booked">AK</span>
+          <span class="pip pip--mid" title="Andrew — 48% booked">AN</span>
+          <span class="pip" title="Kara — 29% booked">KP</span>
+          <span class="pip" title="Megan — 29% booked">MK</span>
+          <span class="pip" title="Drew — 25% booked">DC</span>
+          <span class="pip" title="Aaron — 23% booked">AO</span>
+          <span class="pip" title="Wesley — 23% booked">WG</span>
+          <span class="pip" title="Sonia — 22% booked">SO</span>
+          <span class="pip" title="Dana — 20% booked">DM</span>
+          <span class="pip" title="Simone — 20% booked">SC</span>
+          <span class="pip" title="Colin — 17% booked">CO</span>
+          <span class="pip" title="Erin — 10% booked">EV</span>
+          <span class="pip" title="Elena — 10% booked">EM</span>
+          <span class="pip" title="Fiona — 0% booked">FA</span>
+          <span class="pip" title="Mae — 0% booked">MM</span>
+          <span class="pip" title="Kyle — 0% booked">KF</span>
+          <span class="pip" title="Kelsey — 0% booked">KM</span>
+        </div>
+        <div class="meter__keys">
+          <span class="meter__key"><span class="swatch" style="background:var(--c-series-1);"></span>Marissa at 78%, carrying the most this week</span>
+          <span class="meter__key"><span class="swatch" style="background:var(--c-plate-track);"></span>four people with nothing booked at all</span>
+        </div>
+      </div>
+      <p class="plate__note">Open one and you get their tasks, not a conversation about whether the number is fair.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="editions">
+  <div class="wrap section">
+    <p class="label label--muted section__label">Editions</p>
+    <div class="section__head">
+      <h2>It does not send invoices</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        On purpose. This edition is for studios that already bill through
+        something they are happy with. Work arrives here already sold and
+        already priced. The only question it answers is what it cost to deliver.
+      </p>
+      <p class="body">
+        A second edition runs the chain the other way round: the contract is
+        written in the product and the tasks come from its lines. Want both?
+        Say so on the form.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="band band--sunk" id="waitlist">
+  <div class="wrap section">
+    <p class="label label--muted section__label">Early access</p>
+    <div class="section__head">
+      <h2>Tell us about your studio</h2>
+    </div>
+    <div class="section__body">
+      <p class="body">
+        We are setting the first studios up by hand, a few at a time. Rough size
+        and whatever you use today is enough to start.
+      </p>
+    </div>
+
+    <div class="section__extra">
+      <form class="form" id="wl-form" novalidate>
+        <div class="field">
+          <label class="field__label" for="wl-email">Email</label>
+          <input class="field__control" type="email" id="wl-email" name="email"
+                 placeholder="you@studio.com" autocomplete="email" required>
+        </div>
+        <div class="field__pair">
+          <div class="field">
+            <label class="field__label" for="wl-size">People</label>
+            <select class="field__control" id="wl-size" name="size">
+              <option value="1-5">1 to 5</option>
+              <option value="6-15" selected>6 to 15</option>
+              <option value="16-40">16 to 40</option>
+              <option value="40+">More than 40</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="wl-tool">What you use now</label>
+            <input class="field__control" type="text" id="wl-tool" name="tool"
+                   placeholder="Spreadsheets, Harvest…">
+          </div>
+        </div>
+        <div>
+          <button class="btn btn--primary btn--lg" type="submit" id="wl-send">Join the waitlist</button>
+        </div>
+        <p class="form__msg" id="wl-msg" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="receipt" id="wl-done" hidden>
+        <h3>You are on the list.</h3>
+        <p class="fine" id="wl-done-note">
+          We will write before the next few places open. The first message asks
+          which of your live projects you want set up first.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="band colophon">
+  <div class="wrap colophon__in">
+    <div class="wordmark">
+      <span class="wordmark__mark">D</span>
+      <span class="wordmark__name">Drover</span>
+      <span class="chip">Profit</span>
+    </div>
+    <p class="fine">
+      Figures on this page come from a working demonstration studio. Every
+      person, project and number in it is invented.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('wl-form');
+  var msg = document.getElementById('wl-msg');
+  var done = document.getElementById('wl-done');
+  var doneNote = document.getElementById('wl-done-note');
+  var send = document.getElementById('wl-send');
+  var emailEl = document.getElementById('wl-email');
+  if (!form) { return; }
+
+  /* The store is resolved lazily. Nothing about the page waits on it, and a
+     viewer who cannot reach it still gets the form and an honest answer. */
+  var capsP = null;
+  function caps() {
+    if (!capsP) {
+      capsP = (window.claude && window.claude.use)
+        ? Promise.all([window.claude.use('db'), window.claude.use('user')])
+            .catch(function () { return [null, null]; })
+        : Promise.resolve([null, null]);
+    }
+    return capsP;
+  }
+
+  function say(text, bad) {
+    msg.textContent = text;
+    msg.classList.toggle('form__msg--bad', !!bad);
+  }
+
+  function valid(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  }
+
+  emailEl.addEventListener('input', function () {
+    emailEl.removeAttribute('aria-invalid');
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = emailEl.value.trim();
+    var size = document.getElementById('wl-size').value;
+    var tool = document.getElementById('wl-tool').value.trim();
+
+    if (!valid(email)) {
+      emailEl.setAttribute('aria-invalid', 'true');
+      say('That address does not look complete — check it and try again.', true);
+      emailEl.focus();
+      return;
+    }
+
+    send.disabled = true;
+    say('Saving…');
+
+    caps().then(function (pair) {
+      var db = pair[0], user = pair[1];
+      if (!db || !user) { return Promise.reject({ code: 'no_store' }); }
+      return user.id().then(function (id) {
+        if (!id) { return Promise.reject({ code: 'no_store' }); }
+        return db.doc('waitlist/' + id).set({
+          email: email, size: size, tool: tool || '', at: new Date().toISOString()
+        });
+      });
+    }).then(function () {
+      form.hidden = true;
+      done.hidden = false;
+      done.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }).catch(function (err) {
+      send.disabled = false;
+      var code = err && err.code;
+      if (code === 'no_store' || code === 'not_granted' || code === 'invalid_argument'
+          || code === 'capability_disabled' || code === 'capability_removed') {
+        /* Nothing was stored, so do not pretend otherwise. */
+        form.hidden = true;
+        done.hidden = false;
+        doneNote.textContent = 'This preview can only record sign-ups from viewers '
+          + 'signed in to Claude with access to the page, so nothing was saved for '
+          + 'you just now. On the live site this posts straight to the list.';
+      } else if (code === 'resource_exhausted' || code === 'unavailable') {
+        say('That did not get through. Give it a moment and try again.', true);
+      } else {
+        say('Something went wrong saving that. Try again in a moment.', true);
+      }
+    });
+  });
+})();
+</script>
+
+</body></html>
