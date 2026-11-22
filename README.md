@@ -8,7 +8,7 @@ Static marketing / waitlist page for **Drover Profit**: project profitability fo
 index.html          # the whole page: design tokens, components, markup, waitlist script
 shots/              # photography and product screenshots used on the page
 Dockerfile          # nginx:alpine serving index.html + shots/
-nginx.conf          # caching, security headers, real 404s
+nginx.conf          # nginx default plus gzip
 docker-compose.yml  # container + Traefik labels for the VM
 .github/workflows/  # CI: asset check, image build, smoke test, deploy on main
 ```
