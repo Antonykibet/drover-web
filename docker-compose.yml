@@ -23,7 +23,7 @@ services:
       traefik.enable: "true"
       traefik.docker.network: "traefik-public"
       traefik.http.routers.drover-web.entrypoints: "https"
-      traefik.http.routers.drover-web.rule: "Host(`${DROVER_WEB_DOMAIN:-drover.roythan.de}`)"
+      traefik.http.routers.drover-web.rule: "Host(`${DROVER_WEB_DOMAIN:-drover.example.com}`)"
       traefik.http.routers.drover-web.tls: "true"
       traefik.http.routers.drover-web.tls.certresolver: "le"
       traefik.http.services.drover-web.loadbalancer.server.port: "80"

@@ -28,7 +28,7 @@ Deployed to the VM as a container behind Traefik, the same way as `mtagger-web`
 (see the infrastructure repo, `services/traefik/README.md`, *Connecting a Docker
 service to Traefik*). nginx serves the page; Traefik terminates TLS with a Let's
 Encrypt certificate from the `le` resolver and routes `DROVER_WEB_DOMAIN`
-(default `drover.roythan.de`) to port 80. The `logging: promtail` label means the
+(a placeholder `drover.example.com` until set) to port 80. The `logging: promtail` label means the
 monitoring stack's Alloy picks up its logs with no extra configuration.
 
 Every push runs CI: it checks every `shots/` image the page references exists,
@@ -42,7 +42,7 @@ It needs three repository secrets: `VM_HOST`, `VM_USER`, `VM_SSH_KEY`.
 ssh <vm>
 git clone <this repo> /apps/drover-web
 cd /apps/drover-web
-cp .env.example .env      # set DROVER_WEB_DOMAIN if not drover.roythan.de
+cp .env.example .env      # set DROVER_WEB_DOMAIN to the real hostname
 docker compose up --build -d
 ```
 
