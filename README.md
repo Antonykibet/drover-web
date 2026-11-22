@@ -25,7 +25,7 @@ Or the production container: `docker build -t drover-web . && docker run --rm -p
 ## Deployment
 
 Runs on the VM as a container behind Traefik, which terminates TLS with a Let's
-Encrypt certificate (`le` resolver).
+Encrypt certificate (`le` resolver). `www.<domain>` permanently redirects to `<domain>`.
 
 Every push runs CI: it checks every `shots/` image the page references exists,
 builds the image and smoke-tests it. A push to `main` then SSHes to the VM as the
@@ -60,8 +60,8 @@ sudo bash deploy/setup.sh <domain> ~/.ssh/drover_web_deploy.pub [people.pub]
 
 `people.pub` holds the public keys that get a shell as `drover`. The setup is
 re-runnable and rewrites `drover`'s `authorized_keys` from its arguments each
-time. Put the private key in the `VM_SSH_KEY` secret, and point an `A` record
-for the domain at the VM.
+time. Put the private key in the `VM_SSH_KEY` secret, and point `A` records for
+the domain and `www.` at the VM before the first deploy.
 
 ## Notes
 

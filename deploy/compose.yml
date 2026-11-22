@@ -28,6 +28,17 @@ services:
       traefik.http.routers.drover-web.tls: "true"
       traefik.http.routers.drover-web.tls.certresolver: "le"
       traefik.http.services.drover-web.loadbalancer.server.port: "80"
+      # www.DOMAIN answers with a permanent redirect to DOMAIN. Needs its own A record:
+      # without one, Traefik's certificate request for it fails on every restart.
+      traefik.http.routers.drover-web-www.entrypoints: "https"
+      traefik.http.routers.drover-web-www.rule: "Host(`www.DOMAIN`)"
+      traefik.http.routers.drover-web-www.tls: "true"
+      traefik.http.routers.drover-web-www.tls.certresolver: "le"
+      traefik.http.routers.drover-web-www.service: "drover-web"
+      traefik.http.routers.drover-web-www.middlewares: "drover-web-www-redirect"
+      traefik.http.middlewares.drover-web-www-redirect.redirectregex.regex: "^https?://www\\.(.+)"
+      traefik.http.middlewares.drover-web-www-redirect.redirectregex.replacement: "https://$${1}"
+      traefik.http.middlewares.drover-web-www-redirect.redirectregex.permanent: "true"
 
 networks:
   traefik-public:
