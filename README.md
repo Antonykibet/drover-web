@@ -8,8 +8,8 @@ Static marketing / waitlist page for **Drover Profit**: project profitability fo
 index.html          # the whole page: design tokens, components, markup, waitlist script
 shots/              # photography and product screenshots used on the page
 Dockerfile          # nginx:alpine serving index.html + shots/
-nginx.conf          # caching, security headers, real 404s
-docker-compose.yml  # container + Traefik labels for the VM
+nginx.conf          # caching, security headers, gzip, real 404s
+deploy/             # VM side: setup script, deploy/logs commands, compose file
 .github/workflows/  # CI: asset check, image build, smoke test, deploy on main
 ```
 
@@ -24,31 +24,44 @@ Or the production container: `docker build -t drover-web . && docker run --rm -p
 
 ## Deployment
 
-Deployed to the VM as a container behind Traefik, the same way as `mtagger-web`
-(see the infrastructure repo, `services/traefik/README.md`, *Connecting a Docker
-service to Traefik*). nginx serves the page; Traefik terminates TLS with a Let's
-Encrypt certificate from the `le` resolver and routes `DROVER_WEB_DOMAIN`
-(a placeholder `drover.example.com` until set) to port 80. The `logging: promtail` label means the
-monitoring stack's Alloy picks up its logs with no extra configuration.
+Runs on the VM as a container behind Traefik, which terminates TLS with a Let's
+Encrypt certificate (`le` resolver).
 
 Every push runs CI: it checks every `shots/` image the page references exists,
-builds the image, and smoke-tests the container. A push to `main` then SSHes to the
-host, pulls, rebuilds, and fails the job if the container doesn't report healthy.
-It needs three repository secrets: `VM_HOST`, `VM_USER`, `VM_SSH_KEY`.
+builds the image and smoke-tests it. A push to `main` then SSHes to the VM as the
+`drover` user, whose key can only run `drover-web-deploy`: it pulls `main` into
+`/srv/drover-web`, builds, restarts the container and fails unless it reports
+healthy. Repository secrets: `VM_HOST`, `VM_USER` (`drover`), `VM_SSH_KEY`.
 
-### First-time host setup
+### The `drover` user
+
+`drover` has no sudo or docker group. Through sudo it can run exactly two
+root-owned commands:
 
 ```sh
-ssh <vm>
-git clone <this repo> /apps/drover-web
-cd /apps/drover-web
-cp .env.example .env      # set DROVER_WEB_DOMAIN to the real hostname
-docker compose up --build -d
+sudo drover-web-deploy     # deploy main now
+sudo drover-web-logs [-f]  # container logs
 ```
 
-`traefik-public` must already exist and the Traefik stack must be running — it is,
-for everything else on the box. DNS: an `A` record for the chosen hostname pointing
-at the host. Traefik requests the certificate on the first request once it resolves.
+What the VM runs is fixed by root-owned files, not the repo: the compose file
+(volumes, network, Traefik labels) is `/etc/drover-web/compose.yml`, and a deploy
+refuses an image that sets its own `traefik.*` labels. Commits change the page
+and its image, never routing or host access. Changes under `deploy/` take effect
+only when root re-runs the setup.
+
+### First-time setup on the VM
+
+As the admin user, make a key for CI and run the setup as root:
+
+```sh
+ssh-keygen -t ed25519 -N '' -C gh-actions-deploy@drover-web -f ~/.ssh/drover_web_deploy
+sudo bash deploy/setup.sh <domain> ~/.ssh/drover_web_deploy.pub [people.pub]
+```
+
+`people.pub` holds the public keys that get a shell as `drover`. The setup is
+re-runnable and rewrites `drover`'s `authorized_keys` from its arguments each
+time. Put the private key in the `VM_SSH_KEY` secret, and point an `A` record
+for the domain at the VM.
 
 ## Notes
 

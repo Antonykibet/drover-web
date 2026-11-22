@@ -1,0 +1,9 @@
+#!/bin/bash
+# Shows the drover-web container's logs. Installed root-owned at
+# /usr/local/bin/drover-web-logs; the drover user may run it via sudo.
+set -euo pipefail
+case "${1:-}" in
+  "")  exec docker logs --tail 200 drover-web ;;
+  -f)  exec docker logs --tail 200 -f drover-web ;;
+  *)   echo "usage: drover-web-logs [-f]" >&2; exit 2 ;;
+esac

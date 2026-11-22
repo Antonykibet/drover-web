@@ -55,15 +55,6 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            set -e
-            cd /apps/drover-web
-            git checkout main
-            git pull --ff-only origin main
-            docker compose up --build -d
-            for i in $(seq 1 15); do
-              [ "$(docker inspect -f '{{.State.Health.Status}}' drover-web)" = healthy ] && break
-              sleep 2
-            done
-            docker compose logs --tail=20 drover-web
-            [ "$(docker inspect -f '{{.State.Health.Status}}' drover-web)" = healthy ]
+          # The VM forces this key to run drover-web-deploy (pull, build, restart,
+          # wait for healthy) whatever is sent, so this line is only a label.
+          script: drover-web-deploy
