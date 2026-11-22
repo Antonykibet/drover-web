@@ -33,7 +33,7 @@ chown -R root:root /srv/drover-web
 
 # Host-owned compose file with the real domain.
 install -d -m 755 /etc/drover-web
-sed "s/DOMAIN/$DOMAIN/" "$HERE/compose.yml" > /etc/drover-web/compose.yml
+sed "s/DOMAIN/$DOMAIN/g" "$HERE/compose.yml" > /etc/drover-web/compose.yml
 chmod 644 /etc/drover-web/compose.yml
 
 install -m 755 -o root -g root "$HERE/drover-web-deploy" /usr/local/bin/drover-web-deploy
