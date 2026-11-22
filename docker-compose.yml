@@ -1,16 +1,44 @@
 services:
   drover-web:
     build: .
+    image: drover-web:latest
+    container_name: drover-web
     restart: unless-stopped
     networks:
       - traefik-public
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+      start_interval: 2s
     labels:
+      # --- Observability: tailed by the monitoring stack's Alloy via the Docker API ---
       logging: "promtail"
+      stackname: "drover-web"
+
+      # --- Traefik ingress: HTTPS on DROVER_WEB_DOMAIN, Let's Encrypt via `le` ---
       traefik.enable: "true"
-      traefik.http.routers.drover-web.rule: "Host(`${DROVER_WEB_DOMAIN:?set DROVER_WEB_DOMAIN in .env}`)"
+      traefik.docker.network: "traefik-public"
       traefik.http.routers.drover-web.entrypoints: "https"
+      traefik.http.routers.drover-web.rule: "Host(`${DROVER_WEB_DOMAIN:-drover.example.com}`)"
+      traefik.http.routers.drover-web.tls: "true"
       traefik.http.routers.drover-web.tls.certresolver: "le"
+      traefik.http.services.drover-web.loadbalancer.server.port: "80"
+      # No www. router: a router for a name with no DNS record makes Traefik retry an
+      # ACME challenge that can never pass, burning Let's Encrypt quota for the domain.
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
 
 networks:
+  # Shared ingress network created once on the host: `docker network create traefik-public`
   traefik-public:
     external: true
+  default:
