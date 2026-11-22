@@ -1,0 +1,42 @@
+#!/bin/bash
+# Pulls drover-web and restarts its container. Installed root-owned at
+# /usr/local/bin/drover-web-deploy; the drover user may run it via sudo.
+# Root can test another branch with DEPLOY_REF=<branch> (sudo strips it for drover).
+set -euo pipefail
+
+APP_DIR=/srv/drover-web
+COMPOSE="docker compose -f /etc/drover-web/compose.yml"
+REF=${DEPLOY_REF:-main}
+
+exec 9>/run/lock/drover-web-deploy.lock
+flock -w 300 9
+
+cd "$APP_DIR"
+git fetch -q origin "$REF"
+git reset -q --hard FETCH_HEAD
+git clean -qfdx
+echo "deploying $REF @ $(git rev-parse --short HEAD)"
+
+$COMPOSE build --pull
+
+# Traefik also reads labels baked into the image. Routing labels are owned by
+# /etc/drover-web/compose.yml; an image carrying its own could claim other hosts.
+bad=$(docker image inspect drover-web:latest \
+  -f '{{range $k, $v := .Config.Labels}}{{println $k}}{{end}}' | grep -i '^traefik\.' || true)
+if [ -n "$bad" ]; then
+  echo "refusing to deploy: image sets Traefik labels:" >&2
+  echo "$bad" >&2
+  exit 1
+fi
+
+$COMPOSE up -d --no-build
+
+status=starting
+for _ in $(seq 1 15); do
+  status=$(docker inspect -f '{{.State.Health.Status}}' drover-web)
+  [ "$status" = healthy ] && break
+  sleep 2
+done
+docker logs --tail 20 drover-web
+[ "$status" = healthy ] || { echo "container is $status, not healthy" >&2; exit 1; }
+echo "deployed"
