@@ -1,0 +1,10 @@
+#!/bin/bash
+# Prints the waitlist as CSV (email, size, tool, created_at), oldest first.
+# Installed root-owned at /usr/local/bin/drover-waitlist-export; the drover
+# user may run it via sudo:
+#
+#   ssh drover@<host> sudo drover-waitlist-export > waitlist.csv
+set -euo pipefail
+[ $# -eq 0 ] || { echo "usage: drover-waitlist-export" >&2; exit 2; }
+exec docker exec drover-db sh -c \
+  'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\copy (SELECT email, size, tool, created_at FROM waitlist ORDER BY created_at) TO STDOUT WITH CSV HEADER"'

@@ -1,6 +1,7 @@
 #!/bin/bash
-# Pulls drover-web and restarts its container. Installed root-owned at
-# /usr/local/bin/drover-web-deploy; the drover user may run it via sudo.
+# Pulls drover-web and restarts its containers (page, waitlist API, database).
+# Installed root-owned at /usr/local/bin/drover-web-deploy; the drover user
+# may run it via sudo.
 # Root can test another branch with DEPLOY_REF=<branch> (sudo strips it for drover).
 set -euo pipefail
 
@@ -19,24 +20,33 @@ echo "deploying $REF @ $(git rev-parse --short HEAD)"
 
 $COMPOSE build --pull
 
-# Traefik also reads labels baked into the image. Routing labels are owned by
+# Traefik also reads labels baked into images. Routing labels are owned by
 # /etc/drover-web/compose.yml; an image carrying its own could claim other hosts.
-bad=$(docker image inspect drover-web:latest \
-  -f '{{range $k, $v := .Config.Labels}}{{println $k}}{{end}}' | grep -i '^traefik\.' || true)
-if [ -n "$bad" ]; then
-  echo "refusing to deploy: image sets Traefik labels:" >&2
-  echo "$bad" >&2
-  exit 1
-fi
+for img in drover-web:latest drover-api:latest; do
+  bad=$(docker image inspect "$img" \
+    -f '{{range $k, $v := .Config.Labels}}{{println $k}}{{end}}' | grep -i '^traefik\.' || true)
+  if [ -n "$bad" ]; then
+    echo "refusing to deploy: $img sets Traefik labels:" >&2
+    echo "$bad" >&2
+    exit 1
+  fi
+done
 
 $COMPOSE up -d --no-build
 
-status=starting
-for _ in $(seq 1 15); do
-  status=$(docker inspect -f '{{.State.Health.Status}}' drover-web)
-  [ "$status" = healthy ] && break
-  sleep 2
+# drover-api waits for drover-db, so allow the slowest of the three to settle.
+failed=""
+for c in drover-db drover-api drover-web; do
+  status=starting
+  for _ in $(seq 1 30); do
+    status=$(docker inspect -f '{{.State.Health.Status}}' "$c")
+    [ "$status" = healthy ] && break
+    sleep 2
+  done
+  echo "$c: $status"
+  [ "$status" = healthy ] || failed="$failed $c"
 done
 docker logs --tail 20 drover-web
-[ "$status" = healthy ] || { echo "container is $status, not healthy" >&2; exit 1; }
+docker logs --tail 20 drover-api
+[ -z "$failed" ] || { echo "not healthy:$failed" >&2; exit 1; }
 echo "deployed"

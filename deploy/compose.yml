@@ -40,6 +40,73 @@ services:
       traefik.http.middlewares.drover-web-www-redirect.redirectregex.replacement: "https://$${1}"
       traefik.http.middlewares.drover-web-www-redirect.redirectregex.permanent: "true"
 
+  # Waitlist API. Traefik sends DOMAIN/api/* here (the longer rule wins over the
+  # page's Host-only rule); everything else stays with nginx.
+  drover-api:
+    build: /srv/drover-web/api
+    image: drover-api:latest
+    container_name: drover-api
+    restart: unless-stopped
+    depends_on:
+      drover-db:
+        condition: service_healthy
+    # POSTGRES_DB/USER/PASSWORD, generated once by setup.sh (root-only, 0600).
+    env_file: /etc/drover-web/db.env
+    environment:
+      POSTGRES_HOST: drover-db
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    cpus: 0.25
+    mem_limit: 64m
+    networks:
+      - traefik-public
+      - drover-db
+    healthcheck:
+      test: ["CMD", "/drover-api", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+      start_interval: 2s
+    labels:
+      logging: "promtail"
+      stackname: "drover-web"
+      traefik.enable: "true"
+      traefik.docker.network: "traefik-public"
+      traefik.http.routers.drover-api.entrypoints: "https"
+      traefik.http.routers.drover-api.rule: "Host(`DOMAIN`) && PathPrefix(`/api/`)"
+      traefik.http.routers.drover-api.tls: "true"
+      traefik.http.routers.drover-api.tls.certresolver: "le"
+      traefik.http.routers.drover-api.service: "drover-api"
+      traefik.http.services.drover-api.loadbalancer.server.port: "8080"
+
+  # Waitlist store. On a private network only drover-api joins; never routed.
+  drover-db:
+    image: postgres:17.12-alpine
+    container_name: drover-db
+    restart: unless-stopped
+    env_file: /etc/drover-web/db.env
+    volumes:
+      - drover-db-data:/var/lib/postgresql/data
+    cpus: 0.5
+    mem_limit: 256m
+    networks:
+      - drover-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      logging: "promtail"
+      stackname: "drover-web"
+
+volumes:
+  drover-db-data: {}
+
 networks:
   traefik-public:
     external: true
+  drover-db:
+    internal: true
