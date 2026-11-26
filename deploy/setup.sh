@@ -4,10 +4,11 @@
 #   sudo bash deploy/setup.sh <domain> <ci-key.pub> [people-keys.pub]
 #
 # Creates the unprivileged `drover` user (no sudo group, no docker group) and
-# lets it run exactly two root-owned commands: drover-web-deploy and
-# drover-web-logs. The CI key is forced to run the deploy and nothing else; any
-# keys in people-keys.pub get a normal shell as drover. authorized_keys is
-# rewritten from the arguments on every run.
+# lets it run exactly three root-owned commands: drover-web-deploy,
+# drover-web-logs and drover-waitlist-export. The CI key is forced to run the
+# deploy and nothing else; any keys in people-keys.pub get a normal shell as
+# drover. authorized_keys is rewritten from the arguments on every run. Also
+# generates the waitlist database credentials on the first run.
 set -euo pipefail
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
@@ -36,13 +37,25 @@ install -d -m 755 /etc/drover-web
 sed "s/DOMAIN/$DOMAIN/g" "$HERE/compose.yml" > /etc/drover-web/compose.yml
 chmod 644 /etc/drover-web/compose.yml
 
+# Waitlist database credentials: generated once, readable by root only. Kept on
+# re-runs, since the database volume was initialised with this password.
+if [ ! -s /etc/drover-web/db.env ]; then
+  umask 077
+  printf 'POSTGRES_DB=drover\nPOSTGRES_USER=drover\nPOSTGRES_PASSWORD=%s\n' \
+    "$(openssl rand -hex 24)" > /etc/drover-web/db.env
+  umask 022
+fi
+chown root:root /etc/drover-web/db.env
+chmod 600 /etc/drover-web/db.env
+
 install -m 755 -o root -g root "$HERE/drover-web-deploy" /usr/local/bin/drover-web-deploy
 install -m 755 -o root -g root "$HERE/drover-web-logs"   /usr/local/bin/drover-web-logs
+install -m 755 -o root -g root "$HERE/drover-waitlist-export" /usr/local/bin/drover-waitlist-export
 
 # `""` means "no arguments allowed"; a bare path would allow any.
 tmp=$(mktemp)
 cat > "$tmp" <<'SUDOERS'
-drover ALL=(root) NOPASSWD: /usr/local/bin/drover-web-deploy "", /usr/local/bin/drover-web-logs "", /usr/local/bin/drover-web-logs -f
+drover ALL=(root) NOPASSWD: /usr/local/bin/drover-web-deploy "", /usr/local/bin/drover-web-logs "", /usr/local/bin/drover-web-logs -f, /usr/local/bin/drover-waitlist-export ""
 SUDOERS
 visudo -cf "$tmp" >/dev/null
 install -m 440 -o root -g root "$tmp" /etc/sudoers.d/drover-web

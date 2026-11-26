@@ -40,10 +40,63 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/nope)" = 404
           echo "smoke ok"
 
+  api:
+    name: Waitlist API
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.12-alpine
+        env:
+          POSTGRES_DB: drover
+          POSTGRES_USER: drover
+          POSTGRES_PASSWORD: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U drover -d drover"
+          --health-interval 2s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+          cache-dependency-path: api/go.sum
+
+      - name: Vet and test
+        working-directory: api
+        run: |
+          test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+          go vet ./...
+          go test ./...
+
+      - name: Build image
+        run: docker build -t drover-api:ci api
+
+      # The deploy refuses images that carry their own Traefik labels.
+      - name: Image has no Traefik labels
+        run: |
+          ! docker image inspect drover-api:ci \
+            -f '{{range $k, $v := .Config.Labels}}{{println $k}}{{end}}' | grep -i '^traefik\.'
+
+      - name: Smoke test against Postgres
+        run: |
+          set -euo pipefail
+          docker run -d --name drover-api-ci --network host \
+            -e POSTGRES_HOST=127.0.0.1 -e POSTGRES_DB=drover \
+            -e POSTGRES_USER=drover -e POSTGRES_PASSWORD=ci drover-api:ci
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:8080/api/health && break; sleep 1; done
+          post() { curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d "$1" http://127.0.0.1:8080/api/waitlist; }
+          test "$(post '{"email":"ci@example.com","size":"6-15","tool":"CI"}')" = 204
+          test "$(post '{"email":"CI@example.com","size":"1-5"}')" = 204
+          test "$(post '{"email":"nope","size":"1-5"}')" = 400
+          test "$(PGPASSWORD=ci psql -h 127.0.0.1 -U drover -d drover -Atc 'select count(*) from waitlist')" = 1
+          docker exec drover-api-ci /drover-api -healthcheck
+          echo "api smoke ok"
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, api]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     concurrency:
       group: deploy-drover-web
