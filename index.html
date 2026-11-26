@@ -1032,6 +1032,10 @@ body::before {
                    placeholder="Spreadsheets, Harvest…">
           </div>
         </div>
+        <div class="field" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+          <label for="wl-website">Leave this empty</label>
+          <input type="text" id="wl-website" name="website" tabindex="-1" autocomplete="off">
+        </div>
         <div>
           <button class="btn btn--primary btn--lg" type="submit" id="wl-send">Join the waitlist</button>
         </div>
@@ -1070,23 +1074,9 @@ body::before {
   var form = document.getElementById('wl-form');
   var msg = document.getElementById('wl-msg');
   var done = document.getElementById('wl-done');
-  var doneNote = document.getElementById('wl-done-note');
   var send = document.getElementById('wl-send');
   var emailEl = document.getElementById('wl-email');
   if (!form) { return; }
-
-  /* The store is resolved lazily. Nothing about the page waits on it, and a
-     viewer who cannot reach it still gets the form and an honest answer. */
-  var capsP = null;
-  function caps() {
-    if (!capsP) {
-      capsP = (window.claude && window.claude.use)
-        ? Promise.all([window.claude.use('db'), window.claude.use('user')])
-            .catch(function () { return [null, null]; })
-        : Promise.resolve([null, null]);
-    }
-    return capsP;
-  }
 
   function say(text, bad) {
     msg.textContent = text;
@@ -1117,35 +1107,36 @@ body::before {
     send.disabled = true;
     say('Saving…');
 
-    caps().then(function (pair) {
-      var db = pair[0], user = pair[1];
-      if (!db || !user) { return Promise.reject({ code: 'no_store' }); }
-      return user.id().then(function (id) {
-        if (!id) { return Promise.reject({ code: 'no_store' }); }
-        return db.doc('waitlist/' + id).set({
-          email: email, size: size, tool: tool || '', at: new Date().toISOString()
-        });
-      });
-    }).then(function () {
-      form.hidden = true;
-      done.hidden = false;
-      done.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }).catch(function (err) {
-      send.disabled = false;
-      var code = err && err.code;
-      if (code === 'no_store' || code === 'not_granted' || code === 'invalid_argument'
-          || code === 'capability_disabled' || code === 'capability_removed') {
-        /* Nothing was stored, so do not pretend otherwise. */
+    fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email, size: size, tool: tool,
+        website: document.getElementById('wl-website').value
+      })
+    }).then(function (res) {
+      if (res.ok) {
         form.hidden = true;
         done.hidden = false;
-        doneNote.textContent = 'This preview can only record sign-ups from viewers '
-          + 'signed in to Claude with access to the page, so nothing was saved for '
-          + 'you just now. On the live site this posts straight to the list.';
-      } else if (code === 'resource_exhausted' || code === 'unavailable') {
-        say('That did not get through. Give it a moment and try again.', true);
-      } else {
-        say('Something went wrong saving that. Try again in a moment.', true);
+        done.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
       }
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        send.disabled = false;
+        var code = body && body.error;
+        if (code === 'invalid_email') {
+          emailEl.setAttribute('aria-invalid', 'true');
+          say('That address does not look complete — check it and try again.', true);
+          emailEl.focus();
+        } else if (res.status === 429) {
+          say('That is a few tries in a row. Give it a few minutes and try again.', true);
+        } else {
+          say('Something went wrong saving that. Try again in a moment.', true);
+        }
+      });
+    }).catch(function () {
+      send.disabled = false;
+      say('That did not get through. Check your connection and try again.', true);
     });
   });
 })();
